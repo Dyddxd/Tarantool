@@ -1,0 +1,20 @@
+---
+# Source: tarantool-operator/templates/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: my-operator-tarantool-operator
+  labels:
+    app.kubernetes.io/name: tarantool-operator
+    app.kubernetes.io/instance: my-operator
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: tarantool
+    app.kubernetes.io/component: tarantool-operator-ce
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: my-operator-tarantool-operator
+subjects:
+  - kind: ServiceAccount
+    name: my-operator-tarantool-operator
+    namespace: "default"

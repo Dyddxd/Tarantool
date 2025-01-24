@@ -1,0 +1,234 @@
+---
+# Source: cartridge/templates/roles.yaml
+apiVersion: tarantool.io/v1beta1
+kind: Role
+metadata:
+  name: my-cartridge-storage
+  labels:
+    app.kubernetes.io/name: cartridge
+    app.kubernetes.io/instance: my-cartridge
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: tarantool
+    app.kubernetes.io/component: tarantool
+    tarantool.io/cluster-name: my-cartridge
+spec:
+  replicasets: 2
+  vshard:
+    weight: 100
+    clusterRoles: 
+    - app.roles.storage
+  replicasetTemplate:
+    replicas: 2
+    minReadySeconds: 0
+    volumeClaimTemplates:
+      - metadata:
+          name: my-cartridge-data-volume
+        spec:
+          resources:
+            requests:
+              storage: 2Gi
+          accessModes:
+            - ReadWriteOnce
+    updateStrategy:
+      type: OnDelete
+      rollingUpdate: 
+        {}
+    podTemplate:
+      metadata:
+        labels:
+          app.kubernetes.io/name: cartridge
+          app.kubernetes.io/instance: my-cartridge
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/part-of: tarantool
+          app.kubernetes.io/component: tarantool
+          tarantool.io/cluster-name: my-cartridge
+          tarantool.io/role-name: my-cartridge-storage
+      spec:
+        terminationGracePeriodSeconds: 30
+        dnsConfig:
+          options:
+            - name: ndots
+              value: "1"
+        securityContext: 
+          fsGroup: 1200
+        volumes:
+          - name: my-cartridge-socket-volume
+            emptyDir: {}
+        containers:
+          - name: cartridge
+            image: "tarantool/examples-kv:1.0.0"
+            imagePullPolicy: IfNotPresent
+            volumeMounts:
+              - name: my-cartridge-socket-volume
+                mountPath: "/var/run/tarantool"
+              - name: my-cartridge-data-volume
+                mountPath: "/var/lib/tarantool"
+            resources: {}
+            ports:
+              - containerPort: 8081
+                protocol: TCP
+                name: http
+              - containerPort: 3301
+                protocol: TCP
+                name: tarantool-tcp
+              - containerPort: 3301
+                protocol: UDP
+                name: tarantool-udp
+            readinessProbe:
+              failureThreshold: 5
+              initialDelaySeconds: 5
+              periodSeconds: 30
+              successThreshold: 1
+              timeoutSeconds: 1
+              tcpSocket:
+                port: http
+            env:            
+              - name: TARANTOOL_INSTANCE_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.name
+              - name: TARANTOOL_HTTP_PORT
+                value: "8081"
+              - name: TARANTOOL_MEMTX_MEMORY
+                value: "128000000"
+              - name: TARANTOOL_PROBE_URI_TIMEOUT
+                value: "60"
+              - name: TARANTOOL_BUCKET_COUNT
+                value: "30000"
+              - name: TARANTOOL_WORKDIR
+                value: "/var/lib/tarantool"
+              - name: TARANTOOL_USER
+                value: "admin"
+              - name: TARANTOOL_ALIAS
+                value: "$(TARANTOOL_INSTANCE_NAME)"
+              - name: TARANTOOL_ADVERTISE_HOST
+                value: "$(TARANTOOL_INSTANCE_NAME).my-cartridge.default.svc.cluster.local"
+              - name: TARANTOOL_ADVERTISE_URI
+                value: "$(TARANTOOL_ADVERTISE_HOST):3301"
+              - name: TARANTOOL_CONNECTION_STRING
+                value: "$(TARANTOOL_ADVERTISE_HOST):3301"
+              - name: CARTRIDGE_RUN_DIR
+                value: "/var/run/tarantool"
+            envFrom:
+              - secretRef:
+                  name: "my-cartridge-auth"
+        automountServiceAccountToken: false
+        restartPolicy: Always
+---
+# Source: cartridge/templates/roles.yaml
+apiVersion: tarantool.io/v1beta1
+kind: Role
+metadata:
+  name: my-cartridge-router
+  labels:
+    app.kubernetes.io/name: cartridge
+    app.kubernetes.io/instance: my-cartridge
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: tarantool
+    app.kubernetes.io/component: tarantool
+    tarantool.io/cluster-name: my-cartridge
+spec:
+  allRw: true
+  replicasets: 2
+  vshard:
+    weight: 1
+    clusterRoles: 
+    - failover-coordinator
+    - app.roles.router
+  replicasetTemplate:
+    replicas: 1
+    minReadySeconds: 0
+    volumeClaimTemplates:
+      - metadata:
+          name: my-cartridge-data-volume
+        spec:
+          resources:
+            requests:
+              storage: 1Gi
+          accessModes: 
+            - ReadWriteOnce
+    updateStrategy:
+      type: OnDelete
+      rollingUpdate: 
+        {}
+    podTemplate:
+      metadata:
+        labels:
+          app.kubernetes.io/name: cartridge
+          app.kubernetes.io/instance: my-cartridge
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/part-of: tarantool
+          app.kubernetes.io/component: tarantool
+          tarantool.io/cluster-name: my-cartridge
+          tarantool.io/role-name: my-cartridge-router
+      spec:
+        terminationGracePeriodSeconds: 30
+        dnsConfig:
+          options:
+            - name: ndots
+              value: "1"
+        securityContext: 
+          fsGroup: 1200
+        volumes:
+          - name: my-cartridge-socket-volume
+            emptyDir: {}
+        containers:
+          - name: cartridge
+            image: "tarantool/examples-kv:1.0.0"
+            imagePullPolicy: IfNotPresent
+            volumeMounts:
+              - name: my-cartridge-socket-volume
+                mountPath: "/var/run/tarantool"
+              - name: my-cartridge-data-volume
+                mountPath: "/var/lib/tarantool"
+            resources: {}
+            ports:
+              - containerPort: 8081
+                protocol: TCP
+                name: http
+              - containerPort: 3301
+                protocol: TCP
+                name: tarantool-tcp
+              - containerPort: 3301
+                protocol: UDP
+                name: tarantool-udp
+            readinessProbe:
+              failureThreshold: 5
+              initialDelaySeconds: 5
+              periodSeconds: 30
+              successThreshold: 1
+              timeoutSeconds: 1
+              tcpSocket:
+                port: http
+            env:            
+              - name: TARANTOOL_INSTANCE_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.name
+              - name: TARANTOOL_HTTP_PORT
+                value: "8081"
+              - name: TARANTOOL_MEMTX_MEMORY
+                value: "128000000"
+              - name: TARANTOOL_PROBE_URI_TIMEOUT
+                value: "60"
+              - name: TARANTOOL_BUCKET_COUNT
+                value: "30000"
+              - name: TARANTOOL_WORKDIR
+                value: "/var/lib/tarantool"
+              - name: TARANTOOL_USER
+                value: "admin"
+              - name: TARANTOOL_ALIAS
+                value: "$(TARANTOOL_INSTANCE_NAME)"
+              - name: TARANTOOL_ADVERTISE_HOST
+                value: "$(TARANTOOL_INSTANCE_NAME).my-cartridge.default.svc.cluster.local"
+              - name: TARANTOOL_ADVERTISE_URI
+                value: "$(TARANTOOL_ADVERTISE_HOST):3301"
+              - name: TARANTOOL_CONNECTION_STRING
+                value: "$(TARANTOOL_ADVERTISE_HOST):3301"
+              - name: CARTRIDGE_RUN_DIR
+                value: "/var/run/tarantool"
+            envFrom:
+              - secretRef:
+                  name: "my-cartridge-auth"
+        automountServiceAccountToken: false
+        restartPolicy: Always

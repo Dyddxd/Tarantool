@@ -1,0 +1,72 @@
+---
+# Source: tarantool-operator/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-operator-tarantool-operator
+  labels:
+    app.kubernetes.io/name: tarantool-operator
+    app.kubernetes.io/instance: my-operator
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: tarantool
+    app.kubernetes.io/component: tarantool-operator-ce
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tarantool-operator
+      app.kubernetes.io/instance: my-operator
+      app.kubernetes.io/component: tarantool-operator-ce
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tarantool-operator
+        app.kubernetes.io/instance: my-operator
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: tarantool
+        app.kubernetes.io/component: tarantool-operator-ce
+    spec:
+      serviceAccountName: my-operator-tarantool-operator
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: manager
+          image: tarantool/tarantool-operator:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+          command:
+            - /manager
+          args:
+            - "--health-probe-bind-address=:8081"
+            - "--leader-elect"
+          resources: 
+            limits: {}
+            requests: {}
+          livenessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 5
+            httpGet:
+              path: /healthz
+              port: http
+          readinessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 5
+            httpGet:
+              path: /readyz
+              port: http
+          ports:
+            - containerPort: 8081
+              name: http
+              protocol: TCP
+            - containerPort: 9443
+              name: https
+              protocol: TCP

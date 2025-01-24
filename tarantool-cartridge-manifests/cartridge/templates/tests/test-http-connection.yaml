@@ -1,0 +1,36 @@
+---
+# Source: cartridge/templates/tests/test-http-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "my-cartridge-storage-test-http"
+  annotations:
+    helm.sh/hook: test-success
+    helm.sh/hook-delete-policy: hook-succeeded
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command:
+        - wget
+      args:
+        - "my-cartridge-storage.default.svc.cluster.local:8081"
+  restartPolicy: Never
+---
+# Source: cartridge/templates/tests/test-http-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "my-cartridge-router-test-http"
+  annotations:
+    helm.sh/hook: test-success
+    helm.sh/hook-delete-policy: hook-succeeded
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command:
+        - wget
+      args:
+        - "my-cartridge-router.default.svc.cluster.local:8081"
+  restartPolicy: Never

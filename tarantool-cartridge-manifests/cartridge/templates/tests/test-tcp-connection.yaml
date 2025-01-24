@@ -1,0 +1,50 @@
+---
+# Source: cartridge/templates/tests/test-tcp-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "my-cartridge-storage-test-tcp"
+  annotations:
+    helm.sh/hook: test-success
+    helm.sh/hook-delete-policy: hook-succeeded
+spec:
+  containers:
+    - name: tarantoolctl
+      image: tarantool/tarantool:2.10.2-centos7
+      env:
+        - name: TARANTOOL_USER
+          value: "admin"
+      envFrom:
+        - secretRef:
+            name: "my-cartridge-auth"
+      command:
+        - bash
+      args:
+        - "-c"
+        - "echo 'return 0' | tarantoolctl connect ${TARANTOOL_USER}:${TARANTOOL_PASSWORD}@my-cartridge-storage.default.svc.cluster.local:3301"
+  restartPolicy: Never
+---
+# Source: cartridge/templates/tests/test-tcp-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "my-cartridge-router-test-tcp"
+  annotations:
+    helm.sh/hook: test-success
+    helm.sh/hook-delete-policy: hook-succeeded
+spec:
+  containers:
+    - name: tarantoolctl
+      image: tarantool/tarantool:2.10.2-centos7
+      env:
+        - name: TARANTOOL_USER
+          value: "admin"
+      envFrom:
+        - secretRef:
+            name: "my-cartridge-auth"
+      command:
+        - bash
+      args:
+        - "-c"
+        - "echo 'return 0' | tarantoolctl connect ${TARANTOOL_USER}:${TARANTOOL_PASSWORD}@my-cartridge-router.default.svc.cluster.local:3301"
+  restartPolicy: Never
