@@ -56,7 +56,7 @@ spec:
             emptyDir: {}
         containers:
           - name: cartridge
-            image: "tarantool/examples-kv:1.0.0"
+            image: "tarantool/example-kv:1.0.0"
             imagePullPolicy: IfNotPresent
             volumeMounts:
               - name: my-cartridge-socket-volume
@@ -174,7 +174,7 @@ spec:
             emptyDir: {}
         containers:
           - name: cartridge
-            image: "tarantool/examples-kv:1.0.0"
+            image: "tarantool/example-kv:1.0.0"
             imagePullPolicy: IfNotPresent
             volumeMounts:
               - name: my-cartridge-socket-volume
