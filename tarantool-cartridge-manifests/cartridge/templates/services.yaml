@@ -13,21 +13,24 @@ metadata:
     app.kubernetes.io/component: tarantool
     tarantool.io/cluster-name: my-cartridge
 spec:
-  type: ClusterIP
+  type: NodePort
   sessionAffinity: None
   ports:
     - port: 8081
       protocol: TCP
       name: http
       targetPort: http
+      nodePort: 31195
     - port: 3301
       protocol: TCP
       name: tarantool-tcp
       targetPort: tarantool-tcp
+      nodePort: 31197
     - port: 3301
       protocol: UDP
       name: tarantool-udp
       targetPort: tarantool-tcp
+      nodePort: 31532
   selector:
     app.kubernetes.io/name: cartridge
     app.kubernetes.io/instance: my-cartridge
@@ -49,7 +52,7 @@ metadata:
     app.kubernetes.io/component: tarantool
     tarantool.io/cluster-name: my-cartridge
 spec:
-  type: ClusterIP
+  type: NodePort
   sessionAffinity: None
   ports:
     - port: 8081
