@@ -102,7 +102,7 @@ spec:
               - name: TARANTOOL_ALIAS
                 value: "$(TARANTOOL_INSTANCE_NAME)"
               - name: TARANTOOL_ADVERTISE_HOST
-                value: "$(TARANTOOL_INSTANCE_NAME).my-cartridge.default.svc.cluster.local"
+                value: "$(TARANTOOL_INSTANCE_NAME).my-cartridge.tarantool.svc.cluster.local"
               - name: TARANTOOL_ADVERTISE_URI
                 value: "$(TARANTOOL_ADVERTISE_HOST):3301"
               - name: TARANTOOL_CONNECTION_STRING
@@ -220,7 +220,7 @@ spec:
               - name: TARANTOOL_ALIAS
                 value: "$(TARANTOOL_INSTANCE_NAME)"
               - name: TARANTOOL_ADVERTISE_HOST
-                value: "$(TARANTOOL_INSTANCE_NAME).my-cartridge.default.svc.cluster.local"
+                value: "$(TARANTOOL_INSTANCE_NAME).my-cartridge.tarantool.svc.cluster.local"
               - name: TARANTOOL_ADVERTISE_URI
                 value: "$(TARANTOOL_ADVERTISE_HOST):3301"
               - name: TARANTOOL_CONNECTION_STRING
