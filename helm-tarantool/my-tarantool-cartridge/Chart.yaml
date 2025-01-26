@@ -1,0 +1,13 @@
+---
+apiVersion: v2
+name: cartridge
+description: Tarantool Cartridge
+type: application
+version: 1.0.1
+appVersion: 1.0.0
+kubeVersion: ">=1.16-0"
+keywords:
+  - tarantool
+  - cartridge
+  - tarantool-operator
+  - tarantool-cartridge
